@@ -1,35 +1,52 @@
-import { Component } from 'react';
-import css from './Modal.module.css'
+import { ModalStyle, Overlay } from "./Modal.styled";
+import { createPortal } from "react-dom";
+import { Component } from 'react'
+import PropTypes from 'prop-types'
+
+const modalRoot = document.querySelector('#modal-root');
+
 export class Modal extends Component {
-    
-    componentDidMount() {
-        window.addEventListener('keydown', this.clickKeyEscape)
-    }
-  
-    componentWillUnmount() {
-        window.removeEventListener('keydown', this.clickKeyEscape)
+
+    static propTypes = {
+        onClose: PropTypes.func.isRequired,
+        selectedPhoto: PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            largeImageURL: PropTypes.string.isRequired,
+            webformatURL: PropTypes.string.isRequired,
+            tags: PropTypes.string.isRequired,
+        }).isRequired,
     }
 
-      clickKeyEscape = (e) => {
-          if (e.code === 'Escape') {
-         this.props.onClose();
-            }
+    componentDidMount = () => {
+        window.addEventListener('keydown', this.onEscapeCloseModal);
+    }
+
+    componentWillUnmount = () => {
+        window.removeEventListener('keydown', this.onEscapeCloseModal);
     }
     
-    clickBackDrop = ({currentTarget, target}) => {
-        if (currentTarget === target) {
+    onEscapeCloseModal = (event) => {
+        if (event.code === 'Escape') {
             this.props.onClose()
         }
     }
 
-    render() {
-        const {alt, src} = this.props
-        return (
-            <div className={css.Overlay} onClick={this.clickBackDrop}>
-                <div className={css.Modal}>
-                     <img src={src} alt={alt} />
-                </div>
-            </div>
-        )
+    onClickOverlay = (event) => {
+        if (event.target === event.currentTarget) {
+            this.props.onClose()
+        };
     }
-}
+
+    render() {
+        const { selectedPhoto: {largeImageURL, tags} } = this.props;
+
+        return createPortal(
+            <Overlay onClick={this.onClickOverlay}>
+                <ModalStyle>
+                    <img src={largeImageURL} alt={tags} />
+                </ModalStyle>
+            </Overlay>,
+            modalRoot);
+    }
+};
+

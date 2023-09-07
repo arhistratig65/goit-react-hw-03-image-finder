@@ -1,19 +1,16 @@
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import axios from "axios";
+import { paramsForNotify } from "components/App/App";
+import { Notify } from "notiflix";
 
-const KEY = '37679975-c61ca7dd5cf5e93b8af868242';
-const URL = 'https://pixabay.com/api/';
-const PER_PAGE = 12;
+const KEY = "37679975-c61ca7dd5cf5e93b8af868242";
+const URL = "https://pixabay.com/api/";
 
+export async function fetchPhoto(search, page, perPage) {
+    const url = `${URL}?key=${KEY}&q=${search}&page=${page}&per_page=${perPage}&image_type=photo&orientation=horizontal`;
+    const response = await axios.get(url);
+    return response.data;       
+};
 
-export async function getImage(textValue, page) {
-  try {
-    const response = await axios(URL, {params:{key:KEY, q:textValue, page:page, per_page:PER_PAGE}} );
-    const dataRespons = await response.data;  
-    return dataRespons;
-  } catch (error) {
-      toast.error(`API not faund: ${error.message}`)
-          throw new Error(error.message);
-  }
-}
-
+export function onFetchError() {
+    Notify.failure('Oops! Something went wrong! Try reloading the page or make another choice!', paramsForNotify);
+};

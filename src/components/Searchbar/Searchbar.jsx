@@ -1,42 +1,24 @@
-import { Formik, Form, Field } from 'formik';
-import css from './Searchbar.module.css'
-import { BsSearch } from 'react-icons/bs'
-import { toast } from 'react-toastify';
+import { SearchForm, SearchFormButton, SearchFormInput, SearchbarStyle } from "./Searchbar.styled";
+import PropTypes from 'prop-types'
 
+export const Searchbar = ({ onSubmitSearchBar }) => (
+  <SearchbarStyle>
+    <SearchForm onSubmit={onSubmitSearchBar}>
+      <SearchFormButton>
+        <span>Search</span>
+      </SearchFormButton>
 
-export const Searchbar = ({ onSubmit }) => {
-  const submitSerchbar = (values, actions) => {
-    if (values.serchText.trim() === '') {
-      return toast.error('Please enter a query to search',
-        {
-          position: "top-center",
-          autoClose: 2000,
-        })
-    }
-    onSubmit(values.serchText);
-     actions.resetForm();
-  }
+      <SearchFormInput
+        type="text"
+        name="search"
+        autoComplete="off"
+        autoFocus
+        placeholder="Search images and photos"
+      />
+    </SearchForm>
+  </SearchbarStyle>
+);
 
-    return (
-      <header className={css.Searchbar}>
-        <Formik
-          initialValues={{ serchText: '' }}
-          onSubmit={submitSerchbar}
-        >
-          <Form className={css.SearchForm}>
-            <button type="submit" value='submit' className={css.SearchForm_button}>
-              <BsSearch className={css.SearchForm_button_label} />
-            </button>
-            <Field
-              name='serchText'
-              className={css.SearchForm_input}
-              type="text"
-              autoComplete="off"
-              autoFocus
-              placeholder="Search images and photos"
-            /> 
-          </Form>
-        </Formik>
-      </header>
-    )
-  }
+Searchbar.propTypes = {
+  onSubmitSearchBar: PropTypes.func.isRequired,
+}

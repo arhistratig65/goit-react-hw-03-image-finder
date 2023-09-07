@@ -1,84 +1,136 @@
 import { Component } from "react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { Loader } from '../Loader/Loader';
-import { Button } from '../Button/Button';
+import { Loader } from "../Loader/Loader";
+import { Button } from "../Button/Button";
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { fetchPhoto, onFetchError } from "../../utils/api";
 import { Searchbar } from "../Searchbar/Searchbar";
+import { AppStyle } from "./App.styled";
 import { ImageGallery } from "../ImageGallery/ImageGallery";
-import {getImage} from 'utils/Api';
-import { Modal } from '../Modal/Modal';
+import { Modal } from "../Modal/Modal";
 
+export const paramsForNotify = {
+  position: 'center-center',
+  timeout: 3000,
+  width: '400px',
+  fontSize: '24px'
+};
+const perPage = 12;
 
 export class App extends Component {
-state = {
-  textSerch: '',
-  hits:[],
-  page: 1,
-  isLoading: false, 
-  totalHits: 0,
-  showModal: false,
-  selectCart:null,
+  state = {
+    search: '',
+    photos: [],
+    page: 1,
+    loading: false,
+    btnLoadMore: false,
+    showModal: false,
+    selectedPhoto: null,
   }
-  
+
   componentDidUpdate(_, prevState) {
-    const { textSerch, page } = this.state;
-    if (prevState.textSerch !== this.state.textSerch|| prevState.page !== page) {
-    this.addData(textSerch, page)
-    }
-  }  
-      
-  
-  addData = async (textSearch, page) => {
-    try {
-    this.setState({isLoading:true})
-    const newData = await getImage(textSearch, page);
-      this.setState(prevState => (
-        { hits: page === 1 ? newData.hits : [...prevState.hits, ...newData.hits],
-         totalHits: newData.totalHits }));
-    } catch (error) {
-       toast.error(`API NOT FAUND: ${error.message}`)
-    } finally { this.setState({isLoading:false})}
-   
-  } 
+    const prevSearch = prevState.search;
+    const prevPage = prevState.page;
+    const newSearch = this.state.search;
+    const newPage = this.state.page;
 
-  hendleSerchSubmit = (imageSerch) => {
-    if (this.state.textSerch !== imageSerch) {
-      this.setState({textSerch:imageSerch, page:1})
-    }
+    if (prevSearch !== newSearch || prevPage !== newPage) {
+      this.addData(newSearch, newPage);
+    };  
+  }
+
+  addData  = (search, page) => {
+    this.setState({ loading: true });
+
+    fetchPhoto(search, page, perPage)
+      .then(data => {
+        const { totalHits } = data;
+        const totalPage = Math.ceil(data.totalHits / perPage);
+        if (totalHits === 0) {
+          return Notify.failure('Sorry, there are no images matching your search query. Please try again.', paramsForNotify);
+        }
+
+        const arrPhotos = data.hits.map(({ id, webformatURL, largeImageURL, tags }) => (
+          { id, webformatURL, largeImageURL, tags }
+        ));
+        
+        this.setState(prevState =>
+          ({ photos: [...prevState.photos, ...arrPhotos] }));
+        
+        if (totalPage > page) {
+          this.setState({ btnLoadMore: true })
+        } else {
+          Notify.info("We're sorry, but you've reached the end of search results.", paramsForNotify);
+          this.setState({ btnLoadMore: false });
+        };
+      })
+    .catch(onFetchError)
+    .finally(() => {
+      this.setState({ loading: false });
+    });
+  }
+
+  onClickRender = () => {
+    this.setState(({page}) => ({ page: page + 1}));
+  }
+
+  toggleModal = () => {
+    this.setState(({showModal}) => ({
+      showModal: !showModal
+    }))
+  }
+
+  onClickOpenModal = (event) => {
+    const { photos } = this.state;
+    const imageId = event.target.getAttribute('data-id');
+    const selectedPhoto = photos.find(photo => 
+      photo.id === Number(imageId));
+    this.setState({ selectedPhoto });
+
+    this.toggleModal();
+  }
+
+  onSubmitSearchBar = (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const searchValue = form.search.value
+      .trim()
+      .toLowerCase()
+      .split(' ')
+      .join('+');;
     
-  }
+    if (searchValue === '') {
+      Notify.info('Enter your request, please!', paramsForNotify);
+      return;
+    };
 
-  clickInLoadMore = () => {
-    this.setState(prevState =>({page: prevState.page + 1}))
-  }
-  
-  openModal = () => {
-   this.setState({showModal:true})
-  }
+    if (searchValue === this.state.search) {
+      Notify.info('Enter new request, please!', paramsForNotify);
+      return;
+    };
 
-  closeModal = () => {
-    this.setState({showModal:false})
+    this.setState({
+      search: searchValue,
+      page: 1,
+      photos: [],
+    });
+    
+    // form.reset();
   }
-
-  handleImageClick = (selectCart) => {
-    this.setState({ selectCart, showModal:true });
-  };
 
   render() {
-    const { hits, textSerch, isLoading, totalHits, showModal, selectCart } = this.state;
-    const showButton = hits.length > 0 && hits.length < totalHits;
-       return (
-         <div>
-          <ToastContainer position="top-center" autoClose={2000}/>
-           <Searchbar onSubmit={this.hendleSerchSubmit} />
-           {isLoading&&<Loader/>}
-           <ImageGallery
-             hits={hits}
-             alt={`image ${textSerch}`}
-             onClick={this.handleImageClick} />
-           {showButton && <Button totalHits={this.state.totalHits} onClick={this.clickInLoadMore} />}
-           {showModal && <Modal src={selectCart.largeImageURL} alt={`Big image ${textSerch}`} onClose={this.closeModal}  />}
-         </div>
-  );
+    const { loading, photos, btnLoadMore, showModal, selectedPhoto } = this.state;
+
+    return (
+      <div>
+        <Searchbar onSubmitSearchBar={this.onSubmitSearchBar} />
+        {loading && <Loader />}
+        {/* {error && <h2>Error</h2>} */}
+        <AppStyle>
+          <ImageGallery photos={photos} onClickImageItem={this.onClickOpenModal} />
+        </AppStyle>
+        {photos.length !== 0 && btnLoadMore && <Button onClickRender={this.onClickRender} />}
+        {showModal && <Modal selectedPhoto={selectedPhoto} onClose={this.toggleModal} />}
+      </div>
+    );
   }
 };

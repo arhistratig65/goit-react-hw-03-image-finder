@@ -1,26 +1,25 @@
-import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem'
-import css from './ImageGallery.module.css'
-import { nanoid } from 'nanoid'
+import { ImageGalleryItem } from "components/ImageGalleryItem/ImageGalleryItem";
+import { Gallery } from "./ImageGallery.styled";
+import PropTypes from 'prop-types'
 
-export const ImageGallery = ( {hits, alt, onClick}) => {
-    const selectItem = id => {
-        let selectCart = hits.find(cart => cart.id === id);
-        if (selectCart) {
-            onClick(selectCart)
-        }
-    }
+export const ImageGallery = ({photos, onClickImageItem}) => (
+    <Gallery>
+        {photos.map(({id, webformatURL, tags }) => (
+            <ImageGalleryItem
+                id={id}
+                tags={tags}
+                smallUrl={webformatURL}
+                onClickImageItem={onClickImageItem} />
+        ))}
+    </Gallery>
+);
 
-    return (
-       hits && <ul className={css.ImageGallery}   >
-            {hits.map(image => 
-                <ImageGalleryItem
-                    key={nanoid(10)}
-                    id={image.id}
-                    srcImage={image.webformatURL}
-                    altImage={alt}
-                    onClick={selectItem}
-                 />   
-           )}     
-</ul>
-    )
+ImageGallery.propTypes = {
+    photos: PropTypes.arrayOf(PropTypes.objectOf({
+        id: PropTypes.number.isRequired,
+        largeImageURL: PropTypes.string.isRequired,
+        webformatURL: PropTypes.string.isRequired,
+        tags: PropTypes.string.isRequired,
+    }).isRequired,).isRequired,
+    onClickImageItem: PropTypes.func.isRequired,
 }
