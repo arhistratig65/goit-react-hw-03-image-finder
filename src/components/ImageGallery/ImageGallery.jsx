@@ -1,19 +1,26 @@
-import { ImageGalleryItem } from '../ImageGalleryItem/ImageGalleryItem';
-import { Gallery } from './ImageGallery.styled';
+import { ImageGalleryItem } from 'components/ImageGallery/ImageGalleryItem/ImageGalleryItem'
+import css from './ImageGallery.module.css'
+import { nanoid } from 'nanoid'
 
-export const ImageGallery = ({ galleryItems }) => {
-  return (
-    <Gallery>
-      {galleryItems.map(({ id, largeImageURL, tags, webformatURL }) => {
-        return (
-          <ImageGalleryItem
-            key={id}
-            largeImageURL={largeImageURL}
-            tags={tags}
-            webformatURL={webformatURL}
-          />
-        );
-      })}
-    </Gallery>
-  );
-};
+export const ImageGallery = ( {hits, alt, onClick}) => {
+    const selectItem = id => {
+        let selectCart = hits.find(cart => cart.id === id);
+        if (selectCart) {
+            onClick(selectCart)
+        }
+    }
+
+    return (
+       hits && <ul className={css.ImageGallery}   >
+            {hits.map(image => 
+                <ImageGalleryItem
+                    key={nanoid(10)}
+                    id={image.id}
+                    srcImage={image.webformatURL}
+                    altImage={alt}
+                    onClick={selectItem}
+                 />   
+           )}     
+</ul>
+    )
+}

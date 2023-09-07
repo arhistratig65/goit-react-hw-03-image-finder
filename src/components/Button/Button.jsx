@@ -1,14 +1,6 @@
-import PropTypes from 'prop-types';
-import { ButtonLoad } from './Button.styled';
-
-export const Button = ({ onClick }) => {
+import css from './Button.module.css'
+export const Button = ({onClick}) => {
     return (
-        <ButtonLoad type="button" onClick={onClick}>
-            Load More
-        </ButtonLoad>
+        <button  type='button' className={css.Button} onClick={onClick}>Load more</button>
     )
 }
-
-ButtonLoad.propTypes = {
-  onClick: PropTypes.func,
-};
