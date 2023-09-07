@@ -1,4 +1,4 @@
-import { ImageGalleryItem } from 'components/ImageGallery/ImageGalleryItem/ImageGalleryItem'
+import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem'
 import css from './ImageGallery.module.css'
 import { nanoid } from 'nanoid'
 
