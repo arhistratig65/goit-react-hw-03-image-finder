@@ -81,7 +81,7 @@ export class App extends React.Component {
     const {loading, isLoadMore, errorApi} = this.state
 
     if(errorApi) {
-      return <h1 style={{marginLeft: '40%'}}>Ой! Щось трапилось :(</h1>
+      return <h1 style={{marginLeft: '40%'}}>Something happened...(</h1>
     }
     
     return (
