@@ -18,7 +18,6 @@ export const getApi = async (searchName, page, perPage) => {
   apiParams.page = page;
   const searchParams = new URLSearchParams(apiParams);
   const Url = baseUrl + '/?' + searchParams.toString();
- 
 
   const response = await axios.get(Url);
   return response.data;
