@@ -12,7 +12,8 @@ export class SearchBar extends React.Component {
     event.preventDefault();
     const searchName = event.currentTarget.elements.searchName.value;
     if(searchName.trim() === '') {
-      toast('Write something!');
+      console.log('Напиши що-небудь!');
+      toast('Напиши що-небудь!');
     }
     else {
       this.props.onSubmit(searchName);

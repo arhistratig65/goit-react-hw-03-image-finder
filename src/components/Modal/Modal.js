@@ -14,6 +14,7 @@ export class Modal extends React.Component {
 
   componentDidMount() {
     window.addEventListener('keydown', this.handleModalEsc);
+    console.log('keydown');
   }
 
 
@@ -24,6 +25,7 @@ export class Modal extends React.Component {
 
   handleModalEsc = (event) => {
     if(event.code === "Escape") {
+      console.log("Escape");
       this.props.closeModal();
     } 
   }
